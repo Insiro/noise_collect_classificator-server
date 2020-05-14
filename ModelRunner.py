@@ -59,7 +59,7 @@ def input_from_android(audio):
     model = CNN()
     model.load_state_dict(torch.load("model-combined-1.pth.tar"))
     model.cpu()
-    print(audio.shape)
+    # print(audio.shape)
     audio = np.split(audio, [110250])
     print("2")
     audio = audio[0]
@@ -67,7 +67,7 @@ def input_from_android(audio):
     print("3")
     audio = np.nan_to_num(audio)
     print("4")
-    print(audio)
+    # print(audio)
     # print(audio.shape)
     S = librosa.feature.melspectrogram(y=audio, n_mels=128, fmax=8000)
     melspec = librosa.power_to_db(S, ref=np.max)
@@ -79,19 +79,43 @@ def input_from_android(audio):
 
     softmax = nn.Softmax()
     outputs = softmax(outputs)
-    print(outputs)
+    _, predicted = torch.max(outputs.data, 0)
+    dict = {'0': 'Restaurant',
+            '1': 'market',
+            '2': 'Bus',
+            '3': 'Road',
+            '4': 'Factory',
+            '5': 'Coffee_shop',
+            '6': 'Subway',
+            '7': 'Office',
+            '8': 'bicycle',
+
+            }
+    predicted = predicted.detach().numpy()
+    label = dict.get(str(predicted))
+    label = label+" = "+str("%.2f" %
+                            ((outputs.detach().numpy())[predicted]*100))+"%"
+    # print ((outputs.detach().numpy())[predicted])
+    print(label)
     return outputs.detach()
 
 
 # def getInputFromAndroid(audio_bitesArray):
 #     # print(audio_bitesArray)
 #     print(np.array(audio_bitesArray))
+
+
 #     # print(np.frombuffer(audio_bitesArray, dtype=np.float64))
 #     return input_from_android(np.array(audio_bitesArray))
 
+def roadWav(filename):
+    y, sr = librosa.load(path=filename, duration=5)
+    return input_from_android(y)
+
 
 if __name__ == "__main__":
-    # y, sr = librosa.load(path="bicycle 91-8-new.wav", duration=5)
+    y, sr = librosa.load(path="bicycle 91-8-new.wav", duration=5)
+    # y, sr = librosa.load(path="1temp.wav", duration=5)
 
     # the input should be np.ndarray [shape=(n,)], n=110250 for 5 sec. eg(110250,)
     print(input_from_android(y))

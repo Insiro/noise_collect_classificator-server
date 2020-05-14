@@ -1,0 +1,7 @@
+{
+    "model_delaytime": "5s",
+    "buffer_size": 1024,
+    "time_size": 110250,
+    "host_name": "192.9.45.72",
+    "port_num": 3389
+}
