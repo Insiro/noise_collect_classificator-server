@@ -24,8 +24,6 @@ class Connection:
         try:
             received = self.socket.recv(2048)
             dataSize: int = int(received[2:])
-            print("dataSize", dataSize)
-            print("fileName : ", self.fileName)
             file = open(self.fileName, "wb")
             size = 0
             received = self.socket.recv(dataSize)
@@ -36,25 +34,27 @@ class Connection:
                     break
                 received = self.socket.recv(dataSize)
             file.close()
-            print("recieved")
+            print(self.info, dataSize, "bytes recieved")
             return True
         except Exception as e:
+            print(self.info, "Excepted !!")
             print(e)
-            print("Excepted !!")
             return False
 
     def controll(self):
         self.socket.sendall(model_delaytime.encode('utf-8'))
+        print(self.info, "fileName : ", self.fileName)
         while True:
             if not self.recieveFile():
-                return
+                self.socket.close
+                break
             result, label = mr.classifyFromFile(self.fileName)
-            sendString = label + ' '+' '.join(result)+" endData\n"
-            print(sendString)
+            sendString = label + ' '+' '.join(result)+"\n"
             self.socket.sendall(sendString.encode('utf-8'))
-            print("data sended")
-            sleep(0.5)
-            os.remove(self.fileName)
+            print(self.info, "send data : ", sendString)
+            sleep(1)
+            # return
+            # os.remove(self.fileName)
 
 
 class Runner:
@@ -63,6 +63,7 @@ class Runner:
     port: int
     fileName: str
     socket: socket.socket
+    accessPin: int = 5523
 
     def __init__(self, host: str = '192.9.45.72', port: int = 3389):
         self.host = host
@@ -77,15 +78,21 @@ class Runner:
         self.serverSocket.listen()
         while True:
             clientSocket, info = self.serverSocket.accept()
-            con = Connection(clientSocket, info, self.socCount)
-            t = threading.Thread(self.handle(con))
+            t = threading.Thread(self.handle(clientSocket, info))
             # t.start()
             self.socCount = self.socCount+1
 
-    def handle(self, con: Connection):
+    def handle(self, socket: socket.socket, info):
+        try:
+            passNum = int(socket.recv(2048)[2:])
+        finally:
+            if not (passNum == self.accessPin):
+                socket.close()
+                print(info, 'failed to authoruze')
+                return
+        con = Connection(socket, info, self.socCount)
         con.controll()
         sleep(0.5)
-
         del con
         print("free controller")
 

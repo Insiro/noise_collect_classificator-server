@@ -95,7 +95,6 @@ def classifyFromFile(filename):
     y, sr = librosa.load(path=filename, duration=5)
     label, result = input_from_android(y)
     values = [str("%.3f" % (i*100)) for i in result.numpy()]
-    print(' '.join(values), label)
     return values, label
 
 
