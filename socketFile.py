@@ -83,6 +83,7 @@ class Runner:
             self.socCount = self.socCount+1
 
     def handle(self, socket: socket.socket, info):
+        passNum: int = 0
         try:
             passNum = int(socket.recv(2048)[2:])
         finally:
