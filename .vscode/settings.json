@@ -1,4 +1,5 @@
 {
     "python.pythonPath": "NC/bin/python",
-    "powermode.enableShake": false
+    "powermode.enableShake": false,
+    "python.pipenvPath": "NC"
 }
