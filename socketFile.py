@@ -78,8 +78,9 @@ class Runner:
         self.serverSocket.listen()
         while True:
             clientSocket, info = self.serverSocket.accept()
-            t = threading.Thread(self.handle(clientSocket, info))
-            # t.start()
+            t = threading.Thread(target=self.handle, args=(clientSocket, info,))
+            t.daemon = True
+            t.start()
             self.socCount = self.socCount+1
 
     def handle(self, socket: socket.socket, info):
