@@ -7,6 +7,17 @@ import torch.nn as nn
 import matplotlib.pyplot as plt
 import librosa.display
 
+classes = {'0': 'Restaurant',
+           '1': 'market',
+           '2': 'Bus',
+           '3': 'Road',
+           '4': 'Factory',
+           '5': 'Coffee_shop',
+           '6': 'Subway',
+           '7': 'Office',
+           '8': 'bicycle',
+           }
+
 
 class CNN(nn.Module):
     def __init__(self):
@@ -75,19 +86,8 @@ def input_from_android(audio):
     outputs = softmax(outputs)
 
     _, predicted = torch.max(outputs.data, 0)
-    dict = {'0': 'Restaurant',
-            '1': 'market',
-            '2': 'Bus',
-            '3': 'Road',
-            '4': 'Factory',
-            '5': 'Coffee_shop',
-            '6': 'Subway',
-            '7': 'Office',
-            '8': 'bicycle',
-
-            }
     predicted = predicted.detach().numpy()
-    label = dict.get(str(predicted))
+    label = classes.get(str(predicted))
     return label, outputs.detach()
 
 
@@ -96,6 +96,10 @@ def classifyFromFile(filename):
     label, result = input_from_android(y)
     values = [str("%.3f" % (i*100)) for i in result.numpy()]
     return values, label
+
+
+def getClassName(classNum: int) -> str:
+    return classes.get(str(classNum)).__str__()
 
 
 if __name__ == "__main__":

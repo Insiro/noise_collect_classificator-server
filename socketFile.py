@@ -3,6 +3,7 @@ import ModelRunner as mr
 import threading
 import os
 from time import sleep
+import datetime
 model_delaytime: str = "5s\n"
 buffer_size: int = 1024
 time_size: int = 110250
@@ -11,21 +12,22 @@ time_size: int = 110250
 
 class Connection:
     socket: socket.socket
+    fileDir: str = './recorded/'
 
-    def __init__(self, connection, info, count):
+    def __init__(self, connection, info, count, saveMode):
         super().__init__()
-        print("connected with", info)
         self.socket = connection
         self.info = info
         self.count = count
-        self.fileName = str(self.count)+"temp.wav"
+        self.saveMode = saveMode == 1
+        print("connected with", info)
 
     def recieveFile(self) -> bool:
         try:
+            size = 0
             received = self.socket.recv(2048)
             dataSize: int = int(received[2:])
             file = open(self.fileName, "wb")
-            size = 0
             received = self.socket.recv(dataSize)
             while True:
                 size += len(received)
@@ -37,24 +39,36 @@ class Connection:
             print(self.info, dataSize, "bytes recieved")
             return True
         except Exception as e:
-            print(self.info, "Excepted !!")
-            print(e)
+            print("E-start-----------\n",
+                  self.info, str(datetime.datetime.now()) + "\n", e,
+                  "\nE-end-----------")
             return False
 
     def controll(self):
         self.socket.sendall(model_delaytime.encode('utf-8'))
+        time = datetime.datetime.now().strftime('%m%d%H%M')+"_"
+        if self.saveMode:
+            recived = int(self.socket.recv(2048)[2:])-1
+            print(recived)
+            if recived == -1:
+                return
+            className = mr.getClassName(recived)
+            self.fileName = self.fileDir+time + str(self.count)+"_"+className+".wav"
+        else:
+            self.fileName = self.fileDir+str(self.count)+"temp.wav"
+
         print(self.info, "fileName : ", self.fileName)
         while True:
             if not self.recieveFile():
-                self.socket.close
+                self.socket.close()
                 break
             result, label = mr.classifyFromFile(self.fileName)
             sendString = label + ' '+' '.join(result)+"\n"
             self.socket.sendall(sendString.encode('utf-8'))
             print(self.info, "send data : ", sendString)
-            sleep(1)
-            # return
-            # os.remove(self.fileName)
+            sleep(0.5)
+            if not self.saveMode:
+                os.remove(self.fileName)
 
 
 class Runner:
@@ -83,18 +97,21 @@ class Runner:
             t.start()
             self.socCount = self.socCount+1
 
-    def handle(self, socket: socket.socket, info):
+    def handle(self, socket, info):
         passNum: int = 0
+        types: int = 0
         try:
-            passNum = int(socket.recv(2048)[2:])
+            types = int(socket.recv(1024)[2:])
+            sleep(0.5)
+            passNum = int((socket.recv(1024)[2:]))
+            print(types, passNum)
         finally:
             if not (passNum == self.accessPin):
+                socket.send("fail\n".encode())
                 socket.close()
-                print(info, 'failed to authoruze')
                 return
-        con = Connection(socket, info, self.socCount)
+        con = Connection(socket, info, self.socCount, types)
         con.controll()
-        sleep(0.5)
         del con
         print("free controller")
 
