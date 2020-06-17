@@ -129,7 +129,6 @@ dmypy.json
 .pyre/
 
 
-*.wav
 *.tar
 *.zip
 NC/
