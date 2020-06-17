@@ -133,3 +133,4 @@ dmypy.json
 *.tar
 *.zip
 NC/
+.wav

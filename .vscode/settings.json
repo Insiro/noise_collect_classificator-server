@@ -1,5 +1,8 @@
 {
     "python.pythonPath": "NC/bin/python",
     "powermode.enableShake": false,
-    "python.pipenvPath": "NC"
+    "python.pipenvPath": "NC",
+    "python.formatting.autopep8Args": [
+        "--max-line-length=150"
+    ]
 }

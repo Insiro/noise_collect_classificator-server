@@ -1,0 +1,8 @@
+numpy
+mypy
+pylint
+torch
+torchvision
+datetime
+librosa
+matplotlib
