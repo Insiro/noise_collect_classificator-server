@@ -3,6 +3,10 @@
     "powermode.enableShake": false,
     "python.pipenvPath": "NC",
     "python.formatting.autopep8Args": [
-        "--max-line-length=150"
+        "--max-line-length=150",
+    ],
+    "python.linting.pylintArgs": [
+        "--load-plugins",
+        "--generated-members=numpy.*, torch.*"
     ]
 }
